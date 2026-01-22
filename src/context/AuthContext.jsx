@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect,useRef, useState } from "react";
 import { getMe } from "../api/user.api";
 
 import { logoutUser, logoutAllDevices } from "../api/auth.api";
@@ -8,40 +8,50 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const refreshRef = useRef(null);
 
+  // 1️⃣ Initial user fetch (ONCE)
   const fetchUser = async () => {
     try {
       const res = await getMe();
-      // Backend returns data in res.data.data
       setUser(res.data.data);
-    } catch (error) {
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
+  // 2️⃣ Silent refresh (NO state change)
+  const silentRefresh = async () => {
+    try {
+      await refreshToken();
+    } catch {
+      // ❌ DO NOTHING
+      // No logout
+      // No state change
+    }
+  };
+
   useEffect(() => {
     fetchUser();
+
+    // ⏱️ Refresh every 15 minutes
+    refreshRef.current = setInterval(() => {
+      silentRefresh();
+    }, 15 * 60 * 1000);
+
+    return () => clearInterval(refreshRef.current);
   }, []);
 
+  // 3️⃣ Explicit logout ONLY on user action
   const logout = async () => {
     try {
       await logoutUser();
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
+    } catch {}
     setUser(null);
+    clearInterval(refreshRef.current);
   };
-  const logoutEverywhere = async () => {
-  try {
-    await logoutAllDevices();
-  } catch (error) {
-    console.error("Logout all failed", error);
-  }
-  setUser(null);
-};
-
 
   return (
     <AuthContext.Provider
@@ -51,13 +61,14 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!user,
         setUser,
         logout,
-        logoutEverywhere,
-        refreshUser: fetchUser
+        refreshUser: fetchUser,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
+
+
 
 export const useAuth = () => useContext(AuthContext);

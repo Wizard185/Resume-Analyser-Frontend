@@ -3,14 +3,20 @@ import { analyzeResume } from "../api/resume.api";
 import { UploadCloud, FileText, CheckCircle, XCircle, ChevronDown, ChevronUp, Loader2, Sparkles, AlertCircle } from "lucide-react";
 import { RadialBarChart, RadialBar, Legend, ResponsiveContainer } from "recharts";
 import { clsx } from "clsx";
+import { useLocation } from "react-router-dom";
 
 const Analyze = () => {
   const [resume, setResume] = useState(null);
+  const location = useLocation();
   const [jobDescription, setJobDescription] = useState("");
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState(
+  location.state?.analysis || null
+);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -188,18 +194,58 @@ const Analyze = () => {
 
             <div className="md:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Experience & Level</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-30">
                     <div className="bg-gray-50 p-4 rounded-xl">
-                        <p className="text-sm text-gray-500 mb-1">Job Requires</p>
-                        <p className="text-xl font-bold text-gray-900">{result.jdExperience?.min || 0}-{result.jdExperience?.max || '+'} Years</p>
-                        <span className="inline-block mt-2 px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded font-medium">{result.jdExperience?.level}</span>
-                    </div>
-                    <div className={clsx("p-4 rounded-xl", result.candidateExperience?.years >= (result.jdExperience?.min || 0) ? "bg-green-50 border border-green-100" : "bg-red-50 border border-red-100")}>
-                        <p className="text-sm text-gray-500 mb-1">You Have</p>
-                        <p className="text-xl font-bold text-gray-900">{result.candidateExperience?.years || 0} Years</p>
-                         <span className={clsx("inline-block mt-2 px-2 py-1 text-xs rounded font-medium", result.candidateExperience?.years >= (result.jdExperience?.min || 0) ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800")}>
-                            {result.candidateExperience?.level}
-                         </span>
+                        <div className="md:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+    Experience & Level
+  </h3>
+
+  <div className="grid grid-cols-2 gap-4">
+    {/* Job Requirement */}
+    <div className="bg-gray-50 p-4 rounded-xl">
+      <p className="text-sm text-gray-500 mb-1">Job Requires</p>
+      <p className="text-xl font-bold text-gray-900">
+        {result.experience?.jd?.min ?? 0}–
+        {result.experience?.jd?.max ?? "+"} Years
+      </p>
+      {result.experience?.jd?.level && (
+        <span className="inline-block mt-2 px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded font-medium">
+          {result.experience.jd.level}
+        </span>
+      )}
+    </div>
+
+    {/* Candidate Experience */}
+    <div
+      className={clsx(
+        "p-4 rounded-xl",
+        (result.experience?.candidate?.years ?? 0) >=
+          (result.experience?.jd?.min ?? 0)
+          ? "bg-green-50 border border-green-100"
+          : "bg-red-50 border border-red-100"
+      )}
+    >
+      <p className="text-sm text-gray-500 mb-1">You Have</p>
+      <p className="text-xl font-bold text-gray-900">
+        {result.experience?.candidate?.years ?? 0} Years
+      </p>
+      {result.experience?.candidate?.level && (
+        <span
+          className={clsx(
+            "inline-block mt-2 px-2 py-1 text-xs rounded font-medium",
+            (result.experience?.candidate?.years ?? 0) >=
+              (result.experience?.jd?.min ?? 0)
+              ? "bg-green-200 text-green-800"
+              : "bg-red-200 text-red-800"
+          )}>
+          {result.experience.candidate.level}
+        </span>
+      )}
+    </div>
+  </div>
+</div>
+
                     </div>
                 </div>
             </div>

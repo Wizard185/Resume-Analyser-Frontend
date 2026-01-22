@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { Loader2, Trash2, Calendar, FileText } from "lucide-react";
 import { clsx } from "clsx";
 import { getAnalysisHistory, deleteAnalysis, deleteAllAnalysis } from "../api/resume.api";
+import { useNavigate } from "react-router-dom";
 
 const History = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchHistory = async () => {
     try {
@@ -71,7 +73,16 @@ const History = () => {
       ) : (
         <div className="space-y-4">
           {history.map((item) => (
-            <div key={item._id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-shadow hover:shadow-md">
+              <div
+  key={item._id}
+  onClick={() =>
+    navigate("/analyze", {
+      state: { analysis: item }
+    })
+  }
+  className="cursor-pointer bg-white rounded-xl shadow-sm border border-gray-200 p-6 ..."
+>
+
                 <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                         <span className={clsx(
@@ -91,13 +102,17 @@ const History = () => {
                     </div>
                 </div>
                 
-                <button 
-                    onClick={() => handleDelete(item._id)}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Delete"
-                >
-                    <Trash2 className="w-5 h-5" />
-                </button>
+                <button
+  onClick={(e) => {
+    e.stopPropagation();   // ⬅️ IMPORTANT
+    handleDelete(item._id);
+  }}
+  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+  title="Delete"
+>
+  <Trash2 className="w-5 h-5" />
+</button>
+
             </div>
           ))}
         </div>
