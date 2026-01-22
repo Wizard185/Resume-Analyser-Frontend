@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { getMe } from "../api/user.api";
-import { logoutUser } from "../api/auth.api";
+
+import { logoutUser, logoutAllDevices } from "../api/auth.api";
 
 const AuthContext = createContext(null);
 
@@ -32,6 +33,15 @@ export const AuthProvider = ({ children }) => {
     }
     setUser(null);
   };
+  const logoutEverywhere = async () => {
+  try {
+    await logoutAllDevices();
+  } catch (error) {
+    console.error("Logout all failed", error);
+  }
+  setUser(null);
+};
+
 
   return (
     <AuthContext.Provider
@@ -41,6 +51,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!user,
         setUser,
         logout,
+        logoutEverywhere,
         refreshUser: fetchUser
       }}
     >
