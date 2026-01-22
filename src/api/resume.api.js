@@ -14,3 +14,5 @@ export const getAnalysisHistory = (page = 1, limit = 10) =>
 
 export const deleteAnalysis = (id) =>
   apiClient.delete(`/analysis/${id}`);
+export const deleteAllAnalysis = () =>
+  apiClient.delete("/analysis");

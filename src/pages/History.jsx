@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { getAnalysisHistory, deleteAnalysis } from "../api/resume.api";
 import { Loader2, Trash2, Calendar, FileText } from "lucide-react";
 import { clsx } from "clsx";
+import { getAnalysisHistory, deleteAnalysis, deleteAllAnalysis } from "../api/resume.api";
 
 const History = () => {
   const [history, setHistory] = useState([]);
@@ -32,13 +32,34 @@ const History = () => {
       alert("Failed to delete");
     }
   };
+  const handleClearAll = async () => {
+  if (!window.confirm("This will delete all analysis history. Continue?")) return;
+  try {
+    await deleteAllAnalysis();
+    setHistory([]);
+  } catch (err) {
+    alert("Failed to clear history");
+  }
+};
 
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin w-8 h-8 text-blue-500" /></div>;
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Analysis History</h1>
-      
+      <div className="flex items-center justify-between mb-6">
+  <h1 className="text-3xl font-bold text-gray-900">Analysis History</h1>
+
+  {history.length > 0 && (
+    <button
+      onClick={handleClearAll}
+      className="text-sm text-red-600 hover:text-red-700 font-medium"
+    >
+      Clear All
+    </button>
+  )}
+</div>
+
+
       {history.length === 0 ? (
         <div className="bg-white p-10 rounded-2xl shadow-sm text-center border border-gray-200">
             <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
