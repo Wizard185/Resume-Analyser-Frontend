@@ -11,12 +11,9 @@ import {
   BrainCircuit
 } from "lucide-react";
 import { useState } from "react";
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import {cn} from "../utils/cn";
 
-export function cn(...inputs) {
-  return twMerge(clsx(inputs));
-}
+
 
 const Layout = () => {
   const { user, logout } = useAuth();

@@ -5,14 +5,35 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
+let isRefreshing = false;
+let refreshQueue = [];
+
+const processQueue = (error = null) => {
+  refreshQueue.forEach(promise => {
+    if (error) promise.reject(error);
+    else promise.resolve();
+  });
+  refreshQueue = [];
+};
 apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Optional: Handle 401 globally if needed, though Context handles user state
-    if (error.response && error.response.status === 401) {
-      // If we are not on the login page, we might want to redirect
-      // but usually the AuthContext listener will handle the null user state
+  response => response,
+  async error => {
+    const originalRequest = error.config;
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        await apiClient.get("/auth/refresh");
+        return apiClient(originalRequest);
+      } catch (err) {
+        return Promise.reject(err);
+      }
     }
+
     return Promise.reject(error);
   }
 );

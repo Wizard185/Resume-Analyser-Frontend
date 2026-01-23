@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect,useRef, useState } from "react";
 import { getMe } from "../api/user.api";
+import { refreshToken } from "../api/auth.api";
+
 
 import { logoutUser, logoutAllDevices } from "../api/auth.api";
 
@@ -21,6 +23,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
+  
 
   // 2️⃣ Silent refresh (NO state change)
   const silentRefresh = async () => {
@@ -33,16 +36,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    fetchUser();
+ useEffect(() => {
+  const fetchUser = async () => {
+    try {
+      const res = await getMe();
+      setUser(res.data.data);
+    } catch {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // ⏱️ Refresh every 15 minutes
-    refreshRef.current = setInterval(() => {
-      silentRefresh();
-    }, 15 * 60 * 1000);
+  fetchUser();
+}, []);
 
-    return () => clearInterval(refreshRef.current);
-  }, []);
 
   // 3️⃣ Explicit logout ONLY on user action
   const logout = async () => {

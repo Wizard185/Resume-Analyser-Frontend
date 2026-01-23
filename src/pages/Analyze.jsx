@@ -4,13 +4,30 @@ import { UploadCloud, FileText, CheckCircle, XCircle, ChevronDown, ChevronUp, Lo
 import { RadialBarChart, RadialBar, Legend, ResponsiveContainer } from "recharts";
 import { clsx } from "clsx";
 import { useLocation } from "react-router-dom";
+const normalizeAnalysisResult = (data) => {
+  if (!data) return null;
+
+  // If coming from fresh analysis
+  if (data.jdExperience || data.candidateExperience) {
+    return {
+      ...data,
+      experience: {
+        jd: data.jdExperience,
+        candidate: data.candidateExperience,
+      },
+    };
+  }
+
+  // If coming from history (already normalized)
+  return data;
+};
 
 const Analyze = () => {
   const [resume, setResume] = useState(null);
   const location = useLocation();
   const [jobDescription, setJobDescription] = useState("");
   const [result, setResult] = useState(
-  location.state?.analysis || null
+  normalizeAnalysisResult(location.state?.analysis) || null
 );
 
   const [loading, setLoading] = useState(false);
@@ -33,7 +50,7 @@ const Analyze = () => {
       formData.append("resume", resume);
       formData.append("jobDescription", jobDescription);
       const res = await analyzeResume(formData);
-      setResult(res.data.data);
+      setResult(normalizeAnalysisResult(res.data.data));
     } catch (err) {
       setError(err.response?.data?.message || "Analysis failed. Please check your file and try again.");
     } finally {
@@ -206,7 +223,7 @@ const Analyze = () => {
     <div className="bg-gray-50 p-4 rounded-xl">
       <p className="text-sm text-gray-500 mb-1">Job Requires</p>
       <p className="text-xl font-bold text-gray-900">
-        {result.experience?.jd?.min ?? 0}–
+        {result.experience?.jd?.min ?? 0}
         {result.experience?.jd?.max ?? "+"} Years
       </p>
       {result.experience?.jd?.level && (
