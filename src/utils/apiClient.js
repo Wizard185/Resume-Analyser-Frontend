@@ -1,40 +1,63 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:5000/api/v1",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
   withCredentials: true,
 });
 
 let isRefreshing = false;
-let refreshQueue = [];
+let failedQueue = [];
 
 const processQueue = (error = null) => {
-  refreshQueue.forEach(promise => {
-    if (error) promise.reject(error);
-    else promise.resolve();
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve();
+    }
   });
-  refreshQueue = [];
+  failedQueue = [];
 };
+
 apiClient.interceptors.response.use(
-  response => response,
-  async error => {
+  (response) => response,
+  async (error) => {
     const originalRequest = error.config;
 
+    // If not 401 or already retried → reject
     if (
-      error.response?.status === 401 &&
-      !originalRequest._retry
+      error.response?.status !== 401 ||
+      originalRequest._retry
     ) {
-      originalRequest._retry = true;
-
-      try {
-        await apiClient.get("/auth/refresh");
-        return apiClient(originalRequest);
-      } catch (err) {
-        return Promise.reject(err);
-      }
+      return Promise.reject(error);
     }
 
-    return Promise.reject(error);
+    originalRequest._retry = true;
+
+    // If refresh already in progress → queue request
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        failedQueue.push({
+          resolve: () => resolve(apiClient(originalRequest)),
+          reject,
+        });
+      });
+    }
+
+    isRefreshing = true;
+
+    try {
+      // 🔁 call refresh token endpoint
+      await apiClient.post("/auth/refresh");
+
+      processQueue();
+      return apiClient(originalRequest);
+    } catch (refreshError) {
+      processQueue(refreshError);
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
   }
 );
 
