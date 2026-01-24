@@ -162,7 +162,6 @@ This project is licensed under the **MIT License**.
 ## 👨‍💻 Author
 
 **Kishore Chandra N**
-GitHub: [https://github.com/your-username](https://github.com/your-username)
 
 ---
 
