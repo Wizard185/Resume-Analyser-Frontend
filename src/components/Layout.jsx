@@ -35,7 +35,7 @@ const Layout = () => {
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200">
         <div className="flex items-center gap-2 p-6 border-b border-gray-100">
           <BrainCircuit className="w-8 h-8 text-blue-600" />
-          <span className="text-xl font-bold text-gray-800">JobFit AI</span>
+          <span className="text-xl font-bold text-gray-800">ATS Wizard</span>
         </div>
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -82,7 +82,7 @@ const Layout = () => {
         <header className="md:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200">
           <div className="flex items-center gap-2">
             <BrainCircuit className="w-6 h-6 text-blue-600" />
-            <span className="text-lg font-bold text-gray-800">JobFit AI</span>
+            <span className="text-lg font-bold text-gray-800">ATS Wizard</span>
           </div>
           <button onClick={toggleMenu} className="p-2 text-gray-600">
             {isMobileMenuOpen ? <X /> : <Menu />}
