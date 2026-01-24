@@ -24,6 +24,12 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // 🔥 FIX: If the error comes from the refresh endpoint, reject immediately
+    // This prevents the infinite loop when the refresh token is also invalid.
+    if (originalRequest.url.includes("/auth/refresh")) {
+      return Promise.reject(error);
+    }
+
     // If not 401 or already retried → reject
     if (
       error.response?.status !== 401 ||
